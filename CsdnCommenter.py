@@ -1,3 +1,8 @@
+# File   : CsdnCommenter.py
+# Author : Zhuang Ma
+# E-mail : ChumpMa(at)gmail.com
+# Website: http://www.mazhuang.org
+# Date   : 2014-10-12
 import requests
 from BeautifulSoup import BeautifulSoup
 import getpass
@@ -6,12 +11,13 @@ import random
 import re
 import urllib
 
-class CsdnHandler():
+class CsdnCommenter():
     """Csdn operator"""
     def __init__(self):
         self.sess = requests.Session()
 
     def login(self):
+        """login and keep session"""
         username = raw_input('username: ')
         password = getpass.getpass('password: ')
         url = 'https://passport.csdn.net/account/login'
@@ -35,8 +41,9 @@ class CsdnHandler():
         return self.isLoginSuccess(response)
 
     def autoComment(self):
+        """main handler"""
         if self.getSourceIds() is False:
-            print 'Autocomment failed!'
+            print 'No source wait for comment!'
             return
 
         print 'Total %d source(s) wait for comment.' % len(self.sourceids)
@@ -55,6 +62,7 @@ class CsdnHandler():
         print 'Finished!'
 
     def getSourceIds(self):
+        """get source ids wait for comment"""
         self.sourceids = set()
         pagecount = self.getPageCount()
         if pagecount == 0:
@@ -81,6 +89,7 @@ class CsdnHandler():
         return len(self.sourceids) > 0
 
     def getPageCount(self):
+        """get downloaded resources page count"""
         url = 'http://download.csdn.net/my/downloads'
         html = self.sess.get(url).text
         soup = BeautifulSoup(html)
@@ -95,6 +104,7 @@ class CsdnHandler():
         return int(filter(str.isdigit, str(lasthref)))
 
     def comment(self, sourceid):
+        """comment per source"""
         print 'sourceid %s commenting...' % sourceid
         contents = [
                 'It just soso, but thank you all the same.',
@@ -133,3 +143,11 @@ class CsdnHandler():
         if response.status_code != 200:
             return False
         return -1 != response.content.find('lastLoginIP')
+
+if __name__ == '__main__':
+    csdn = CsdnCommenter()
+    while csdn.login() is False:
+        print 'Login failed! Please try again.'
+    print 'Login succeed!'
+
+    csdn.autoComment()
