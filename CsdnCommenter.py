@@ -43,7 +43,7 @@ class CsdnCommenter():
     def autoComment(self):
         """main handler"""
         if self.getSourceIds() is False:
-            print 'No source wait for comment!'
+            print 'No source can comment!'
             return
 
         print 'Total %d source(s) wait for comment.' % len(self.sourceids)
