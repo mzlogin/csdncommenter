@@ -6,5 +6,7 @@ def main():
         print 'Login failed! Please try again.'
     print 'Login succeed!'
 
+    csdn.autoComment()
+
 if __name__ == '__main__':
     main()
