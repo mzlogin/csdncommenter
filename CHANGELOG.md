@@ -1,4 +1,4 @@
-Changelog
+# Changelog
 
 ### 0.0.3 (2015-05-17)
 
