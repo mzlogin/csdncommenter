@@ -6,12 +6,12 @@ except ImportError:
 
 setup(
     name='csdncommenter',
-    version='0.0.3',
-    description='CSDN已下载资源自动批量评论脚本',
+    version='0.0.4',
+    description='CSDN 已下载资源自动批量评论脚本',
     long_description=open('README.md').read(),
     url='https://github.com/mzlogin/csdncommenter',
     author='Zhuang Ma',
-    author_email='ChumpMa@gmail.com',
+    author_email='chumpma@gmail.com',
     license='MIT',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

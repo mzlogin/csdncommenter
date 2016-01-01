@@ -1,4 +1,4 @@
-CSDN已下载资源自动批量评论脚本
+CSDN 已下载资源自动批量评论脚本
 =======================
 
 [![PyPi version](https://img.shields.io/pypi/v/csdncommenter.svg)](https://pypi.python.org/pypi/csdncommenter)
@@ -26,7 +26,7 @@ CSDN已下载资源自动批量评论脚本
 ###已实现特性
 
 1. 一次登录，评论所有待评论资源。
-2. 适应CSDN两个资源评价至少间隔60S的规则。
+2. 适应 CSDN 两个资源评价至少间隔 60S 的规则。
 3. 随机打分一到五星，并选择对应的评语（目前都是一个英文短句）。
 
 ```

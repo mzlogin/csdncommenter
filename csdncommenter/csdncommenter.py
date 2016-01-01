@@ -10,6 +10,7 @@ import time
 import random
 import re
 import urllib
+import traceback
 
 class CsdnCommenter():
     """Csdn operator"""
@@ -21,7 +22,9 @@ class CsdnCommenter():
         username = raw_input('username: ')
         password = getpass.getpass('password: ')
         url = 'https://passport.csdn.net/account/login'
-        html = self.sess.get(url).text
+        html = self.getUrlContent(self.sess, url)
+        if html is None:
+            return False
         soup = BeautifulSoup(html)
 
         lt = self.getElementValue(soup, 'name', 'lt')
@@ -36,7 +39,12 @@ class CsdnCommenter():
                 '_eventId' : _eventId
                 }
 
-        response = self.sess.post(url, data)
+        response = None
+        try:
+            response = self.sess.post(url, data)
+        except:
+#             traceback.print_exc()
+            pass
 
         return self.isLoginSuccess(response)
 
@@ -74,7 +82,9 @@ class CsdnCommenter():
 
         for n in range(1, pagecount + 1):
             url = 'http://download.csdn.net/my/downloads/%d' % n
-            html = self.sess.get(url).text
+            html = self.getUrlContent(self.sess, url)
+            if html is None:
+                continue
             soup = BeautifulSoup(html)
             sourcelist = soup.findAll('a', attrs={'class' : 'btn-comment'})
             if sourcelist is None:
@@ -91,7 +101,10 @@ class CsdnCommenter():
     def getPageCount(self):
         """get downloaded resources page count"""
         url = 'http://download.csdn.net/my/downloads'
-        html = self.sess.get(url).text
+        html = self.getUrlContent(self.sess, url)
+        if html is None:
+            print 'Get pagecount failed'
+            return 0
         soup = BeautifulSoup(html)
 
         pagelist = soup.findAll('a', attrs={'class' : 'pageliststy'})
@@ -125,11 +138,11 @@ class CsdnCommenter():
                 }
         params = urllib.urlencode(paramsmap)
         url = 'http://download.csdn.net/index.php/comment/post_comment?%s' % params
-        html = self.sess.get(url).text
-        if html.find('({"succ":1})') != -1:
-            print 'sourceid %s comment succeed!' % sourceid
-        else:
+        html = self.getUrlContent(self.sess, url)
+        if html is None or html.find('({"succ":1})') == -1:
             print 'sourceid %s comment failed! response is %s.' % (sourceid, html)
+        else:
+            print 'sourceid %s comment succeed!' % sourceid
 
     @staticmethod
     def getElementValue(soup, element_name, element_value):
@@ -140,9 +153,22 @@ class CsdnCommenter():
 
     @staticmethod
     def isLoginSuccess(response):
-        if response.status_code != 200:
+        if response is None or response.status_code != 200:
             return False
         return -1 != response.content.find('lastLoginIP')
+
+    @staticmethod
+    def getUrlContent(session, url):
+        html = None
+        try:
+            response = session.get(url)
+            if response is not None:
+                html = response.text
+        except requests.exceptions.ConnectionError as e:
+#             traceback.print_exc()
+            pass
+
+        return html
 
 def main():
     csdn = CsdnCommenter()
