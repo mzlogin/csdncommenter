@@ -10,16 +10,16 @@
 
 1. 使用 PyPi
 
-	```
+	```sh
 	pip install csdncommenter
 	csdncommenter
 	```
 
 2. 使用 Git
 
-	将本工程克隆到本地，到 csdncommenter 子目录里运行
-
-	```python
+	```sh
+    git clone git@github.com:mzlogin/csdncommenter.git
+    cd csdncommenter
 	python csdncommenter.py
 	```
 
