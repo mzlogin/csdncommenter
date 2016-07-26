@@ -19,7 +19,7 @@
 
 	```sh
     git clone git@github.com:mzlogin/csdncommenter.git
-    cd csdncommenter
+    cd csdncommenter/csdncommenter
 	python csdncommenter.py
 	```
 
