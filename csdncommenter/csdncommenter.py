@@ -1,8 +1,8 @@
-# File   : CsdnCommenter.py
+# File   : csdncommenter.py
 # Author : Zhuang Ma
-# E-mail : ChumpMa(at)gmail.com
-# Website: http://www.mazhuang.org
-# Date   : 2015-05-17
+# E-mail : chumpma(at)gmail.com
+# Website: http://mazhuang.org
+# Date   : 2016-07-26
 import requests
 from BeautifulSoup import BeautifulSoup
 import getpass
@@ -50,35 +50,35 @@ class CsdnCommenter():
 
     def autoComment(self):
         """main handler"""
-        if self.getSourceIds() is False:
-            print 'No source can comment!'
+        if self.getSourceItems() is False:
+            print('No source can comment!')
             return
 
-        print 'Total %d source(s) wait for comment.' % len(self.sourceids)
+        print('Total %d source(s) wait for comment.' % len(self.sourceitems))
 
         nhandled = 0
-        for sourceid in self.sourceids:
-            left = len(self.sourceids) - nhandled
+        for sourceid in self.sourceitems.keys():
+            left = len(self.sourceitems) - nhandled
 
             sec = random.randrange(61,71)
-            print 'Wait %d seconds for start. %s source(s) left.' % (sec, left)
+            print('Wait %d seconds for start. %s source(s) left.' % (sec, left))
             time.sleep(sec)
 
             self.comment(sourceid)
             nhandled += 1
 
-        print 'Finished!'
+        print('Finished!')
 
-    def getSourceIds(self):
-        """get source ids wait for comment"""
-        self.sourceids = set()
+    def getSourceItems(self):
+        """get (sourceid,username) couples wait for comment"""
+        self.sourceitems = dict()
         pagecount = self.getPageCount()
         if pagecount == 0:
             return False
 
-        print 'Pagecount is %d.' % pagecount
+        print('Pagecount is %d.' % pagecount)
 
-        pattern = re.compile(r'.+/(\d+)#comment')
+        pattern = re.compile(r'/detail/([^/]+)/(\d+)#comment')
 
         for n in range(1, pagecount + 1):
             url = 'http://download.csdn.net/my/downloads/%d' % n
@@ -94,16 +94,16 @@ class CsdnCommenter():
                 if href is not None:
                     rematch = pattern.match(href)
                     if rematch is not None:
-                        self.sourceids.add(rematch.group(1))
+                        self.sourceitems[rematch.group(2)] = rematch.group(1)
 
-        return len(self.sourceids) > 0
+        return len(self.sourceitems) > 0
 
     def getPageCount(self):
         """get downloaded resources page count"""
         url = 'http://download.csdn.net/my/downloads'
         html = self.getUrlContent(self.sess, url)
         if html is None:
-            print 'Get pagecount failed'
+            print('Get pagecount failed')
             return 0
         soup = BeautifulSoup(html)
 
@@ -118,7 +118,7 @@ class CsdnCommenter():
 
     def comment(self, sourceid):
         """comment per source"""
-        print 'sourceid %s commenting...' % sourceid
+        print('sourceid %s commenting...' % sourceid)
         contents = [
                 'It just soso, but thank you all the same.',
                 'Neither good nor bad.',
@@ -126,7 +126,10 @@ class CsdnCommenter():
                 'It is useful for me, thanks.',
                 'I have looking this for long, thanks.'
                 ]
-        rating = random.randrange(1,6)
+        rating = self.getSourceRating(sourceid)
+        print('current rating is %d.' % rating)
+        if rating == 0: # nobody comments
+            rating = 3
         content = contents[rating - 1]
         t = '%d' % (time.time() * 1000)
 
@@ -140,9 +143,31 @@ class CsdnCommenter():
         url = 'http://download.csdn.net/index.php/comment/post_comment?%s' % params
         html = self.getUrlContent(self.sess, url)
         if html is None or html.find('({"succ":1})') == -1:
-            print 'sourceid %s comment failed! response is %s.' % (sourceid, html)
+            print('sourceid %s comment failed! response is %s.' % (sourceid, html))
         else:
-            print 'sourceid %s comment succeed!' % sourceid
+            print('sourceid %s comment succeed!' % sourceid)
+
+    def getSourceRating(self, sourceid):
+        """get current source rating"""
+        rating = 3
+        url = 'http://download.csdn.net/detail/%s/%s' % (self.sourceitems[sourceid], sourceid)
+        html = self.getUrlContent(self.sess, url)
+        if html is None:
+            return rating
+
+        soup = BeautifulSoup(html)
+        ratingspan = soup.findAll('span', attrs={'class': 'star-yellow'})
+        if ratingspan is None:
+            return rating
+
+        ratingstyle = ratingspan[0].get('style', None)
+
+        if ratingstyle is None:
+            return rating
+
+        rating = int(filter(str.isdigit, str(ratingstyle))) / 15
+        return rating
+
 
     @staticmethod
     def getElementValue(soup, element_name, element_value):
@@ -173,8 +198,8 @@ class CsdnCommenter():
 def main():
     csdn = CsdnCommenter()
     while csdn.login() is False:
-        print 'Login failed! Please try again.'
-    print 'Login succeed!'
+        print('Login failed! Please try again.')
+    print('Login succeed!')
 
     csdn.autoComment()
 
