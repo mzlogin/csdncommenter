@@ -81,13 +81,15 @@ class CsdnCommenter():
         pattern = re.compile(r'/detail/([^/]+)/(\d+)#comment')
 
         for n in range(1, pagecount + 1):
+            if n == 1:
+                self.waitUncommentableSourceIfNecessary()
             url = 'http://download.csdn.net/my/downloads/%d' % n
             html = self.getUrlContent(self.sess, url)
             if html is None:
                 continue
             soup = BeautifulSoup(html)
             sourcelist = soup.findAll('a', attrs={'class' : 'btn-comment'})
-            if sourcelist is None:
+            if sourcelist is None or len(sourcelist) == 0:
                 continue
             for source in sourcelist:
                 href = source.get('href', None)
@@ -97,6 +99,22 @@ class CsdnCommenter():
                         self.sourceitems[rematch.group(2)] = rematch.group(1)
 
         return len(self.sourceitems) > 0
+
+    def waitUncommentableSourceIfNecessary(self):
+        """souce cannot comment within 10 minutes after download"""
+        url = 'http://download.csdn.net/my/downloads/1'
+        maxMinutes = 11
+        for i in range(0, maxMinutes):
+            html = self.getUrlContent(self.sess, url)
+            if html is None:
+                break
+            soup = BeautifulSoup(html)
+            sourcelist = soup.findAll('span', attrs={'class' : 'btn-comment'})
+            if sourcelist is None or len(sourcelist) == 0:
+                print('None uncommentable source now!')
+                break
+            print('Waiting for uncommentable source count down %d minutes.' % (maxMinutes-i))
+            time.sleep(60)
 
     def getPageCount(self):
         """get downloaded resources page count"""
@@ -108,7 +126,7 @@ class CsdnCommenter():
         soup = BeautifulSoup(html)
 
         pagelist = soup.findAll('a', attrs={'class' : 'pageliststy'})
-        if pagelist is None:
+        if pagelist is None or len(pagelist) == 0:
             return 0
 
         lasthref = pagelist[len(pagelist) - 1].get('href', None)
@@ -157,7 +175,7 @@ class CsdnCommenter():
 
         soup = BeautifulSoup(html)
         ratingspan = soup.findAll('span', attrs={'class': 'star-yellow'})
-        if ratingspan is None:
+        if ratingspan is None or len(ratingspan) == 0:
             return rating
 
         ratingstyle = ratingspan[0].get('style', None)

@@ -6,7 +6,7 @@ except ImportError:
 
 setup(
     name='csdncommenter',
-    version='0.0.5',
+    version='0.0.6',
     description='CSDN 已下载资源自动批量评论脚本',
     long_description=open('README.md').read(),
     url='https://github.com/mzlogin/csdncommenter',
